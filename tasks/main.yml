@@ -1,0 +1,125 @@
+---
+- name: Gather cpu vendor
+  shell: |
+    if (( (grep "GenuineIntel" /proc/cpuinfo -c) > 0)); then
+      echo intel
+    else
+      echo amd
+    fi
+  args:
+    executable: /bin/bash
+  register: cpu_vendor
+  changed_when: False
+  tags:
+    - proxmox
+
+- name: Remove standard Debian Firmware
+  apt:
+    name: "{{ item }}"
+    state: absent
+    purge: yes
+  loop:
+    - firmware-bnx2x
+    - firmware-realtek
+    - firmware-linux
+    - firmware-linux-free
+    - firmware-linux-nonfree
+  tags:
+    - proxmox
+
+
+- name: Firewall tasks
+  include_tasks: firewall.yml
+
+- name: Add Proxmox Key
+  apt_key:
+    url: http://download.proxmox.com/debian/proxmox-ve-release-{{ proxmox_version.split('.')[0] }}.x.gpg
+    state: present
+  tags:
+    - proxmox
+
+- name: Add Proxmox repository
+  apt_repository:
+    repo: deb http://download.proxmox.com/debian stretch pve-no-subscription
+    state: present
+  tags:
+    - proxmox
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  tags:
+    - proxmox
+
+- name: Install Proxmox
+  apt:
+    name: proxmox-ve={{ proxmox_version }}
+    state: present
+  register: proxmox_install
+  tags:
+    - proxmox
+
+- name: Include network role
+  include_role:
+    name: network
+
+- name: Repo tasks
+  include_tasks: sources.yml
+
+- name: Reboot server
+  reboot:
+  when: proxmox_install.changed
+  tags:
+    - proxmox
+
+- name: Check for Proxmox Kernel
+  shell: "[[ $(uname -rv) =~ PVE ]]"
+  args:
+    executable: /bin/bash
+  tags:
+    - proxmox
+
+- name: Make sure kvm kernel module is loaded.
+  command: modprobe kvm
+  tags:
+    - proxmox
+
+- name: Make sure kvm kernel module for {{ cpu_vendor.stdout }} is loaded.
+  command: modprobe kvm_{{ cpu_vendor.stdout }}
+  tags:
+    - proxmox
+
+- name: Remove proxmox enterprise repo
+  apt_repository:
+    repo: deb https://enterprise.proxmox.com/debian/pve stretch pve-enterprise
+    state: absent
+  when: no_enterprise|bool
+  tags:
+  - proxmox
+  
+- name: Copy nginx config
+  template:
+    src: nginx_proxmox.conf
+    dest: "{{ nginx_sites_path }}/proxmox.conf"
+  notify:
+    - Reload nginx
+    - Install Certificates
+  tags:
+    - nginx
+    - proxmox
+
+- name: Disable rpcbind
+  systemd:
+    name: rpcbind
+    enabled: no
+
+- name: User management tasks
+  include_tasks: users.yml
+  when: manage_users_with_ansible|bool
+
+# TODOs
+# Filesystem organisation
+# Nginx rolle: Defaults setzen, Config schreiben, testen
+
+# Networking: vmbr0 anlegen.
+# no_enterprise with bool-value

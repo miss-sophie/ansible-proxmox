@@ -1,0 +1,10 @@
+---
+- name: Make sure firewall-wrapper are absent
+  package:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - firewalld
+    - ufw
+
+# Evtl noch port 111 blocken

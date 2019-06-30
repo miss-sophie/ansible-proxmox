@@ -1,0 +1,16 @@
+---
+- name: Create User Groups
+  shell: "grep -q {{ item.name }} /etc/pve/user.cfg || pveum groupadd {{ item.name }} -comment '{{ item.comment }}'"
+  with_items:
+    - "{{ pve_groups }}"
+
+- name: Grant permissions to groups
+  command: "pveum aclmod / -group {{ item.name }} -role {{ item.role }}"
+  with_items:
+    - "{{ pve_groups }}"
+
+- name: Create User
+  shell: "grep -q {{ item.name }} /etc/pve/user.cfg || pveum useradd {{ item.name }}@pam -group {{ item.pve_group }}"
+  when: ( item.pve_group is defined )
+  with_items:
+    - "{{ users }}"

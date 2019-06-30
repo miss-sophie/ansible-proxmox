@@ -1,0 +1,3 @@
+---
+no_enterprise : true
+manage_users_with_ansible: true
