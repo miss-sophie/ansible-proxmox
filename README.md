@@ -11,6 +11,7 @@ This role provisioned a pve server on a plain debian installation.
 
 his role can create users and user groups. To be able to use this function, users and groups must be defined as follows:
 
+```yaml
 pve_groups:
   - name: group_name
     role: Administrator
@@ -19,3 +20,4 @@ pve_groups:
 users:
   - name: user_name
     pve_group: pve_admin
+```
