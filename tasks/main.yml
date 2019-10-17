@@ -38,12 +38,8 @@
   tags:
     - proxmox
 
-- name: Add Proxmox repository
-  apt_repository:
-    repo: deb http://download.proxmox.com/debian stretch pve-no-subscription
-    state: present
-  tags:
-    - proxmox
+- name: Repo tasks
+  include_tasks: sources.yml
 
 - name: Update apt cache
   apt:
@@ -100,7 +96,9 @@
 - name: Copy nginx config
   template:
     src: nginx_proxmox.conf
-    dest: "{{ nginx_sites_path }}/proxmox.conf"
+    dest: "{{ nginx_sites_path }}/proxmox_{{ item }}.conf"
+  with_items:
+    - "{{ domains }}"
   notify:
     - Reload nginx
     - Install Certificates
@@ -116,10 +114,4 @@
 - name: User management tasks
   include_tasks: users.yml
   when: manage_users_with_ansible|bool
-
-# TODOs
-# Filesystem organisation
-# Nginx rolle: Defaults setzen, Config schreiben, testen
-
-# Networking: vmbr0 anlegen.
-# no_enterprise with bool-value
+...

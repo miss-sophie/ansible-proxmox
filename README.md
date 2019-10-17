@@ -6,10 +6,11 @@ This role provisioned a pve server on a plain debian installation.
 
 * no_enterprise: bool (set to false if you have a valid enterprise subscription)
 * manage_users_with_ansible: bool
+* proxmox_version: string, for avialable versions look [here](http://download.proxmox.com/debian/pve/dists/stretch/pve-no-subscription/binary-amd64/)
 
 ## User Managment with this role
 
-his role can create users and user groups. To be able to use this function, users and groups must be defined as follows:
+This role can create users and user groups. To be able to use this function, users and groups must be defined as follows:
 
 ```yaml
 pve_groups:
