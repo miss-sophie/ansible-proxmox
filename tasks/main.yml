@@ -31,13 +31,6 @@
 - name: Firewall tasks
   include_tasks: firewall.yml
 
-- name: Add Proxmox Key
-  apt_key:
-    url: http://download.proxmox.com/debian/proxmox-ve-release-{{ proxmox_version.split('.')[0] }}.x.gpg
-    state: present
-  tags:
-    - proxmox
-
 - name: Repo tasks
   include_tasks: sources.yml
 
@@ -85,14 +78,6 @@
   tags:
     - proxmox
 
-- name: Remove proxmox enterprise repo
-  apt_repository:
-    repo: deb https://enterprise.proxmox.com/debian/pve stretch pve-enterprise
-    state: absent
-  when: no_enterprise|bool
-  tags:
-  - proxmox
-  
 - name: Copy nginx config
   template:
     src: nginx_proxmox.conf

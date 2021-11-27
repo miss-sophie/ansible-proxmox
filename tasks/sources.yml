@@ -1,7 +1,14 @@
 ---
+- name: Add Proxmox Key
+  apt_key:
+    url: "https://enterprise.proxmox.com/debian/proxmox-release-bullseye.gpg"
+    state: present
+  tags:
+    - proxmox
+
 - name: Remove proxmox enterprise repo
   apt_repository:
-    repo: "deb https://enterprise.proxmox.com/debian/pve stretch pve-enterprise"
+    repo: "deb https://enterprise.proxmox.com/debian/pve bullseye pve-enterprise"
     state: absent
   when: no_enterprise|bool
   tags:
@@ -10,7 +17,7 @@
 
 - name: Add proxmox no-enterprise repo
   apt_repository:
-    repo: "deb http://download.proxmox.com/debian/pve stretch pve-no-subscription"
+    repo: "deb http://download.proxmox.com/debian/pve bullseye pve-no-subscription"
     state: present
   when: no_enterprise|bool
   tags:
