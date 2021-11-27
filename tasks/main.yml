@@ -97,6 +97,6 @@
     enabled: no
 
 - name: User management tasks
-  include_tasks: users.yml
+  include_tasks: config_users.yml
   when: manage_users_with_ansible|bool
 ...
